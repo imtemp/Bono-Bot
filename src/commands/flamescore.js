@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, InteractionCollector } = require("discord.js");
+const { SlashCommandBuilder } = require("discord.js");
 const Tesseract = require("tesseract.js");
 
 module.exports = {
@@ -13,12 +13,12 @@ module.exports = {
     ),
   async execute(interaction) {
     const image = interaction.options.getString("image");
-    console.log(image);
+
     Tesseract.recognize(image, "eng", {
       logger: (m) => console.log(m),
     }).then(({ data: { text } }) => {
-      console.log(text);
+      texts = text;
     });
-    await interaction.reply("a");
+    await interaction.reply(texts);
   },
 };

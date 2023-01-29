@@ -2,7 +2,7 @@ const { SlashCommandBuilder } = require("discord.js");
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName("fame")
+    .setName("pokedex")
     .setDescription("Fame an user in the server")
     .addUserOption((option) =>
       option
