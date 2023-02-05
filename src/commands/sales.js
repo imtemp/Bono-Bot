@@ -10,6 +10,7 @@ module.exports = {
     let url = "https://store.steampowered.com/api/featuredcategories";
     let games = "";
     let price = "";
+    let storeLink = "";
     const embedText = new EmbedBuilder()
       .setColor(0x0099ff)
       .setTitle("Steam Sales")
@@ -25,9 +26,12 @@ module.exports = {
             gameData[i].original_price / 100 +
             "~~ -> $" +
             gameData[i].final_price / 100;
+          storeLink = `https://store.steampowered.com/app/${gameData[i].id}`;
+
           embedText.addFields({
             name: games,
             value: price,
+            link: storeLink,
           });
         }
         return interaction.reply({ embeds: [embedText] });
