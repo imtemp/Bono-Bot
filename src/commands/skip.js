@@ -5,5 +5,3 @@ module.exports = {
     .setName("skip")
     .setDescription("Skip the song that is currently playing"),
 };
-
-let = "123";

@@ -8,5 +8,3 @@ module.exports = {
       option.setName("link").setDescription("link to song").setRequired(true)
     ),
 };
-
-let x = "123"

@@ -59,29 +59,24 @@ app.post("/api/randomPokemon/:id", async (req, res) => {
     );
     const data = await response.json();
     const totalPokemon = data.count;
-
+    const pokemonPosition = Math.floor(Math.random() * totalPokemon + 1);
     const pokemonResponse = await fetch(
-      `https://pokeapi.co/api/v2/pokemon/${Math.floor(
-        Math.random() * totalPokemon + 1
-      )}`
+      `https://pokeapi.co/api/v2/pokemon/${pokemonPosition}`
     );
     const pokemonData = await pokemonResponse.json();
-
+    const randomPokemon =
+      pokemonData.name.charAt(0).toUpperCase() + pokemonData.name.slice(1);
     const pokemonToStore = {
-      name: pokemonData.name,
+      name: randomPokemon,
       sprite: pokemonData.sprites,
+      position: pokemonPosition,
     };
     user.pokedex.push(pokemonToStore);
     await user.save();
 
     console.log(`${pokemonToStore.name} has been added to ${user.discordId}`);
-    const pokemon = {
-      name: pokemonData.name,
-      sprite: pokemonData.sprites,
-      id: user.discordId,
-    };
 
-    res.json(pokemon);
+    res.json(pokemonToStore);
   } catch (err) {
     console.log(err);
     return res.status(500).send("Error");
@@ -97,6 +92,9 @@ app.get("/api/pokedex/:id", async (req, res) => {
     if (!user) {
       return res.status(404).send("User not found");
     }
+    user.pokedex.sort((x, y) => {
+      return x.position - y.position;
+    });
     res.json(user.pokedex);
   } catch (err) {
     res.status(500).send("Error");
