@@ -54,6 +54,9 @@ app.post("/api/randomPokemon/:id", async (req, res) => {
       });
     }
 
+    // Roll Random Number between 1-100
+    // If 1, roll legendary pokemon
+    // else roll normal
     const response = await fetch(
       "https://pokeapi.co/api/v2/pokemon-species/?limit=0"
     );
@@ -90,7 +93,11 @@ app.get("/api/pokedex/:id", async (req, res) => {
     // use id to access mongo database
     const user = await User.findOne({ discordId: id });
     if (!user) {
-      return res.status(404).send("User not found");
+      let user1 = new User({
+        discordId: id,
+        pokedex: [],
+      });
+      return res.json(user1.pokedex);
     }
     user.pokedex.sort((x, y) => {
       return x.position - y.position;

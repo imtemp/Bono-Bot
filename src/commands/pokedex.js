@@ -17,13 +17,15 @@ module.exports = {
     const botReply = new EmbedBuilder()
       .setTitle("Pokedex")
       .setDescription("You own:");
-    const user = interaction.options.getUser("user");
-    const DISC_ID = interaction.user.id;
     let pokemon = "";
+    let user = interaction.user.id;
+    if (interaction.options.getUser("user")) {
+      user = interaction.options.getUser("user").id;
+    }
     const options = {
       hostname: "localhost",
       port: 9999,
-      path: "/api/pokedex/" + DISC_ID,
+      path: "/api/pokedex/" + user,
       method: "GET",
     };
 
@@ -35,11 +37,18 @@ module.exports = {
 
       res.on("end", () => {
         let pokedex = JSON.parse(data);
-        for (let i = 0; i < pokedex.length; i++) {
-          // add pokemon into embed string to display
-          pokemon = pokedex[i].name;
-          pkmnPosition = pokedex[i].position;
-          botReply.addFields({ name: "#" + pkmnPosition, value: pokemon });
+        console.log(pokedex);
+        if (pokedex.length != 0) {
+          for (let i = 0; i < pokedex.length; i++) {
+            pokemon = pokedex[i].name;
+            pkmnPosition = pokedex[i].position;
+            botReply.addFields({ name: "#" + pkmnPosition, value: pokemon });
+          }
+        } else {
+          botReply.addFields({
+            name: "EMPTY",
+            value: "You have no Pokemons yet",
+          });
         }
         return interaction.reply({ embeds: [botReply] });
       });
