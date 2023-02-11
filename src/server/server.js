@@ -1,12 +1,20 @@
 require("dotenv").config({ path: "../../.env" });
+
+// SERVER
 const express = require("express");
 const app = express();
+const router = express.Router;
 const PORT = process.env.PORT || 9999;
 const fetch = require("node-fetch");
-const User = require("./models/user.js");
+
+// MONGODB
 const mongoose = require("mongoose");
 const { MongoClient, ServerApiVersion } = require("mongodb");
+const User = require("./models/user.js");
 
+// CONTROLLERS
+const pokedex_controller = require("./controller/pokedexController");
+const randomPokemon_Controller = require("./controller/randomPokemonController.js");
 const uri = `mongodb+srv://bonobot:${process.env.MONGO_PASSWORD}@cluster0.6sigoq7.mongodb.net/?retryWrites=true&w=majority`;
 const clientParams = {
   useNewUrlParser: true,
@@ -14,6 +22,7 @@ const clientParams = {
   serverApi: ServerApiVersion.v1,
 };
 
+// connect to db
 mongoose
   .connect(uri, clientParams)
   .then(() => {
@@ -23,90 +32,14 @@ mongoose
     console.log(err);
   });
 
-app.get("/", (req, res) => {
-  res.send("Hello");
-});
-
 // API Endpoints
-app.get("/api/steam", async (req, res) => {
-  try {
-    const response = fetch(
-      "https://store.steampowered.com/api/featuredcategories"
-    );
-    const data = await response.json();
-    res.send(data);
-  } catch (err) {
-    res.status(500).send({ err });
-  }
-});
-
 // **************** POKEMON GACHA ***********************
 
 // POST Request to roll a random pokemon and add it to a Pokedex in the database
-app.post("/api/randomPokemon/:id", async (req, res) => {
-  const { id } = req.params;
-  try {
-    let user = await User.findOne({ discordId: id });
-    if (!user) {
-      user = new User({
-        discordId: id,
-        pokedex: [],
-      });
-    }
-
-    // Roll Random Number between 1-100
-    // If 1, roll legendary pokemon
-    // else roll normal
-    const response = await fetch(
-      "https://pokeapi.co/api/v2/pokemon-species/?limit=0"
-    );
-    const data = await response.json();
-    const totalPokemon = data.count;
-    const pokemonPosition = Math.floor(Math.random() * totalPokemon + 1);
-    const pokemonResponse = await fetch(
-      `https://pokeapi.co/api/v2/pokemon/${pokemonPosition}`
-    );
-    const pokemonData = await pokemonResponse.json();
-    const randomPokemon =
-      pokemonData.name.charAt(0).toUpperCase() + pokemonData.name.slice(1);
-    const pokemonToStore = {
-      name: randomPokemon,
-      sprite: pokemonData.sprites,
-      position: pokemonPosition,
-    };
-    user.pokedex.push(pokemonToStore);
-    await user.save();
-
-    console.log(`${pokemonToStore.name} has been added to ${user.discordId}`);
-
-    res.json(pokemonToStore);
-  } catch (err) {
-    console.log(err);
-    return res.status(500).send("Error");
-  }
-});
+app.post("/api/randomPokemon/:id", randomPokemon_Controller.getRandomPokemon);
 
 // GET reuqest to display all the information regarding an users pokedex
-app.get("/api/pokedex/:id", async (req, res) => {
-  try {
-    const { id } = req.params;
-    // use id to access mongo database
-    const user = await User.findOne({ discordId: id });
-    if (!user) {
-      let user1 = new User({
-        discordId: id,
-        pokedex: [],
-      });
-      return res.json(user1.pokedex);
-    }
-    user.pokedex.sort((x, y) => {
-      return x.position - y.position;
-    });
-    res.json(user.pokedex);
-  } catch (err) {
-    res.status(500).send("Error");
-  }
-});
+app.get("/api/pokedex/:id", pokedex_controller.getPokedex);
 
 app.listen(PORT, () => {
   console.log(`Bono Bot's server is listening on port ${PORT}`);
